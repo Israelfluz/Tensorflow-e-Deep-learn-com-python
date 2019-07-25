@@ -24,6 +24,7 @@ from sklearn.linear_model import LinearRegression
 regressor = LinearRegression()
 
 # Realizando o treinamento
+regressor.fit(x, y)
 
 # Visualizando os coeficiente 
 # Coeficiênte b0
