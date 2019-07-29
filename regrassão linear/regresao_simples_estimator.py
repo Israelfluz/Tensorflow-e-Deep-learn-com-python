@@ -13,7 +13,7 @@ x.shape
 # Variável Y que armazena o valor das casas
 y = base.iloc[:, 2:3].values
 
-# Realizando escalonamento dos valores
+# Realizando escalonamento dos valores (StandardScaler - faz a padronização)
 from sklearn.preprocessing import StandardScaler
 scaler_x = StandardScaler()
 
