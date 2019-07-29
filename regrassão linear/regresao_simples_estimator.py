@@ -1,12 +1,13 @@
-# importação da biblioteca
+# Importação da biblioteca pandas para manipulação, leitura e visualização de dados
 import pandas as pd
 
-# Importação da base de dados 
+# Carregamento da base de dado para análise
 base = pd.read_csv('house-prices.csv')
 
 # Variável X que armazena a metragem quadrada
 x = base.iloc[:, 5].values
 x = x.reshape(-1, 1)
+
 # Visualizando o shape
 x.shape
 
