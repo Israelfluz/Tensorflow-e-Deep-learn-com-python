@@ -104,4 +104,3 @@ from sklearn.metrics import accuracy_score
 taxa_acerto = accuracy_score(y_teste, previsoes_final)
 
 taxa_acerto
-
