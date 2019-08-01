@@ -62,4 +62,29 @@ neuronios_saida = y.shape[1]
 
 neuronios_saida
 
+# Criando a variável W que representa os pesos no formato de dicionário
+w = {'oculta': tf.Variable(tf.random_normal([neuronios_entrada, neuronios_oculta])),
+     'saida': tf.Variable(tf.random_normal([neuronios_oculta, neuronios_saida]))}
 
+# Adcionando a camada BIAS com os seus pesos
+b = {'oculta': tf.Variable(tf.random_normal([neuronios_oculta])),
+     'saida': tf.Variable(tf.random_normal([neuronios_saida]))}
+
+# Criando os placesholders (previsores) para receber os dados
+xph = tf.placeholder('float', [None, neuronios_entrada])
+
+# Criando o placeholder para receber as respostas
+yph = tf.placeholder('float', [None, neuronios_saida])
+
+# Criando o modelo por meio de uma função
+def mlp(x, w, bias):
+    camada_oculta = tf.add(tf.matmul(x, w['oculta']), bias['oculta']) # Calculo da camanda o culta
+    camada_oculta_ativacao = tf.nn.relu(camada_oculta) # processo de ativação com Relu que quando 
+                                                       # recebe maior que 0 retorna o número, caso 
+                                                       # contrário retorna 0.
+    camada_saida = tf.add(tf.matmul(camada_oculta_ativacao, w['saida']), b['saida'])
+    return camada_saida
+
+# Criando o modelo
+modelo = mlp(xph, w, b)
+    
