@@ -87,4 +87,47 @@ def mlp(x, w, bias):
 
 # Criando o modelo
 modelo = mlp(xph, w, b)
+
+# Criando fórmula para verificar o erro
+erro = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits = modelo, labels = yph))
+otimizador = tf.train.AdamOptimizer(learning_rate = 0.0001).minimize(erro)
+
+batch_size = 8
+batch_total = int(len(x_treinamento) / batch_size)
+batch_total
+
+x_batches = np.array_split(x_treinamento, batch_total)
+x_batches
+
+# Construção de uma sessão
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        for epoca in range(3000):
+            erro_medio = 0.0
+            batch_total = int(len(x_treinamento) / batch_size)
+            x_batches = np.array_split(x_treinamento, batch_total)
+            y_batches = np.array_split(y_treinamento, batch_total)
+            for i in range(batch_total):
+                x_batches, y_batches = x_batches[i], y_batches[i]
+                _, custo = sess.run([otimizador, erro], feed_dict = {xph: x_batches, yph: y_batches})
+                erro_medio += custo / batch_total
+            if epoca % 500 == 0:
+                    print('Época: ' + str((epoca + 1)) + 'erro: ' + str(erro_medio))
+        w_final, b_final = sess.run([w, b])
+        
+# Previsões 
+previsoes_teste = mlp(xph, w_final, b_final)
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    r1 = sess.run(previsoes_teste, feed_dict = {x_teste})
+    r2 = sess.run(tf.nn.softmax(r1))
+    r3 = sess.run(tf.argmax(r2, 1))
+
+y_teste2 = np.argmax(y_teste, 1)
+y_teste
+
+
+from sklearn.metrics import accuracy_score
+taxa_acerto = acurracy_score(y_teste2, r3)
+taxa_acerto
     
