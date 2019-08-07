@@ -67,3 +67,26 @@ b = {'oculta1': tf.Variable(tf.random_normal([neuronios_oculta1])),
      'saida': tf.Variable(tf.random_normal([neuronios_saida]))
 }
 
+# Criando os placesholders (previsores) para receber os dados
+xph = tf.placeholder('float', [None, neuronios_entrada])
+
+
+# Criando o placeholder para receber as respostas
+yph = tf.placeholder('float', [None, neuronios_saida])
+
+
+# Criando o modelo por meio de uma função
+def mlp(x, w, bias):
+        camada_oculta1 = tf.nn.relu(tf.add(tf.matmul(x, w['oculta1']), bias['oculta1'])) # Calculo das camandas
+        camada_oculta2 = tf.nn.relu(tf.add(tf.matmul(camada_oculta1, w['oculta2']), bias['oculta2']))
+        camada_oculta3 = tf.nn.relu(tf.add(tf.matmul(camada_oculta2, w['oculta3']), bias['oculta3']))
+        camada_saida = tf.add(tf.matmul(camada_oculta3, w['saida']), bias['saida'])
+        return camada_saida
+
+# Criando o modelo
+modelo = mlp(xph, w, b)
+
+# Criando fórmula para verificar o erro
+erro = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits = modelo, labels = yph))
+otimizador = tf.train.AdamOptimizer(learning_rate = 0.0001).minimize(erro)
+
