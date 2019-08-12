@@ -90,3 +90,24 @@ modelo = mlp(xph, w, b)
 erro = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits = modelo, labels = yph))
 otimizador = tf.train.AdamOptimizer(learning_rate = 0.0001).minimize(erro)
 
+
+# Previsões
+previsoes = tf.nn.softmax(modelo)
+previsoes_corretas = tf.equal(tf.argmax(previsoes, 1), tf.argmax(yph, 1))
+
+# Calculo para a previsão de acertos
+taxa_acerto = tf.reduce_mean(tf.cast(previsoes_corretas, tf.float32))
+
+# Realizado testes
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    for epoca in range(5000): # fazendo os testes com  5000 epocas
+        x_batch, y_batch = mnist.train.next_batch(128)
+        _, custo = sess.run([otimizador, erro], feed_dict = {xph: x_batch, yph: y_batch}) # Treinamento do algoritmo
+        if epoca % 100 == 0: 
+            acc = sess.run([taxa_acerto], feed_dict = {xph: x_batch, yph: y_batch})
+            print('epoca: ' + str((epoca + 1 )) + 'erro: ' + str(custo) + 'acc: ' + str(acc))
+    print('\n')        
+    print('Treinamento concluído')
+    print(sess.run(taxa_acerto, feed_dict = {xph: x_teste, yph: y_teste}))
+    
