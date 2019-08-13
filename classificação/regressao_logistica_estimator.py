@@ -27,7 +27,7 @@ base['income'] = base['income'].apply(converte_class)
 # Variável X armazena os atributos previsores com o pandas
 x = base.drop('income', axis = 1) # Ao criar a variável desse forma estou retirando da base de dados a coluna income
 
-x
+x.head()
 
 # Variável Y recebe a resposta que é a classe com o pandas
 y = base['income'] # Ao criar a variável dessa forma ela vem apenas com uma coluna em sua base de dados 
