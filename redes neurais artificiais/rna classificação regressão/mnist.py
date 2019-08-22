@@ -16,7 +16,7 @@ y_treinamento = mnist.train.labels
 y_treinamento[0]
 y_teste = mnist.test.labels
 
- # Visualizando as imagens da base de dados
+# Visualizando as imagens da base de dados
 import matplotlib.pyplot as plt
 import numpy as np
 plt.imshow(x_treinamento[102].reshape((28, 28)), cmap = 'gray') # cmap = 'gray' deixa o fundo preto e o núemro cinza
