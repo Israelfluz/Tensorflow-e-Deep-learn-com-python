@@ -27,7 +27,7 @@ plt.title('Classe: ' + str(y_treinamento[2]))
 
 import tensorflow as tf
 
-# Criando a função cria_rede que se encontra nos parâmetros do classificador
+# Criando a função cria_rede que se encontra nos parâmetros do classificador Obs: Essa função faz parte do treinamento
 def cria_rede(features, labels, mode):
     # Desse ponto em diante é que se cria toda a estrutura da rede neural
     # Mais parâmetros que devem ser passados no tf.reshape o batch_size, largura, altura, canais das imagens da base de dados 
@@ -68,22 +68,29 @@ def cria_rede(features, labels, mode):
     densa = tf.layers.dense(inputs = flattening, units = 1024, activation = tf.nn.relu)
 
     # Melhorando a performace da rede neural com a técnica DROPOUT que zera alguns valores das entradas
-    dropout = tf.layers.dropout(inputs = densa, rate = 0.2)
+    dropout = tf.layers.dropout(inputs = densa, rate = 0.2, 
+                                training = mode == tf.estimator.ModeKeys.TRAIN) # Obs: Só executamos esse dropout quando estamos em modo de treinamento
     
     # Criando a camada de saída
     # Recebe [batch_size(quantidade de imagens), 1024]
     # Retorna [batch_size, 10]
     saida = tf.layers.dense(inputs = dropout, units = 10)
+    previsoes = tf.argmax(saida, axis = 1)
     
     # Fórmula para o calculo do erro
     erro = tf.losses.sparse_softmax_cross_entropy(labels = labels, logits = saida)
-    otimizador = tf.train.AdamOptimizer(learning_rate = 0.001)
-    treinamento = otimizador.minimize(erro, global_step = tf.train.get_global_step())
+    
+    if mode == tf.estimator.ModeKeys.TRAIN:
+        otimizador = tf.train.AdamOptimizer(learning_rate = 0.001)
+        treinamento = otimizador.minimize(erro, global_step = tf.train.get_global_step())
     
     # Retornando os resultados do treinamento
-    return tf.estimator.EstimatorSpec(mode = mode, loss = erro, train_op = treinamento)
+        return tf.estimator.EstimatorSpec(mode = mode, loss = erro, train_op = treinamento)
 
-
+    if mode == tf.estimator.ModeKeys.EVAL:
+        eval_metrics_ops = {'accuracy': tf.metrics.accuracy(labels = labels, predictions = previsoes)} # accurary indica a taixa e acerto
+        return tf.estimator.EstimatorSpec(mode = mode, loss = erro, eval_metric_ops = eval_metrics_ops)
+        
 # Criando um classificador
 classificador = tf.estimator.Estimator(model_fn = cria_rede)
 
@@ -91,4 +98,9 @@ classificador = tf.estimator.Estimator(model_fn = cria_rede)
 funcao_treinamento = tf.estimator.inputs.numpy_input_fn(x = {'x': x_treinamento}, y = y_treinamento,
                                                         batch_size = 128, num_epochs = None, shuffle = True)
 classificador.train(input_fn = funcao_treinamento, steps = 200)
+
+# Criando a função para a avaliação ou teste
+funcao_teste = tf.estimator.inputs.numpy_input_fn(x = {'x': x_teste}, y = y_teste, num_epochs = 1, shuffle = False)
+resultados = classificador.evaluate(input_fn = funcao_teste)
+resultados
 
