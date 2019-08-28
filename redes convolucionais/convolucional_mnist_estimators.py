@@ -14,6 +14,9 @@ y_treinamento = mnist.train.labels
 y_treinamento
 y_teste = mnist.test.labels
 
+# Realizando a conversão do tipo de dado 
+y_treinamento = np.asarray(y_treinamento, dtype = np.int32)
+y_teste = np.asarray(y_teste, dtype = np.int32)
 
 # Visualizando as imagens da base de dados
 import matplotlib.pyplot as plt
@@ -39,7 +42,7 @@ def cria_rede(features, labels, mode):
     # Criando a primeira camada de max pooling
     # Recebe [batch_size(quantidade de imagens), 28, 28, 32]
     # Retorna [batch_size, 14, 14, 32]
-    pooling1 = tf.layers.max_pooling2d(inputs = covolucao1, pool_size = [2, 2], strides = 2)
+    pooling1 = tf.layers.max_pooling2d(inputs = convolucao1, pool_size = [2, 2], strides = 2)
 
     # Criandando a segunda camada de covolunção da rede neural 
     # Recebe [batch_size(quantidade de imagens), 14, 14, 32]
@@ -50,7 +53,7 @@ def cria_rede(features, labels, mode):
     # Criando a segunda camada de max pooling
     # Recebe [batch_size(quantidade de imagens), 14, 14, 64]
     # Retorna [batch_size, 7, 7, 64]
-    pooling2 = tf.layers.max_pooling2d(input = convolucao2, pool_size = [2, 2], strides = 2)
+    pooling2 = tf.layers.max_pooling2d(inputs = convolucao2, pool_size = [2, 2], strides = 2)
     
     # Aplicando o Flattening e convertendo os dados no formato matriz para um vetor
     # Recebe [batch_size(quantidade de imagens), 7, 7, 64]
@@ -65,18 +68,27 @@ def cria_rede(features, labels, mode):
     densa = tf.layers.dense(inputs = flattening, units = 1024, activation = tf.nn.relu)
 
     # Melhorando a performace da rede neural com a técnica DROPOUT que zera alguns valores das entradas
-    dropout = tf.layers.dropout(input = densa, rate = 0.2)
+    dropout = tf.layers.dropout(inputs = densa, rate = 0.2)
     
     # Criando a camada de saída
     # Recebe [batch_size(quantidade de imagens), 1024]
     # Retorna [batch_size, 10]
     saida = tf.layers.dense(inputs = dropout, units = 10)
     
+    # Fórmula para o calculo do erro
+    erro = tf.losses.sparse_softmax_cross_entropy(labels = labels, logits = saida)
+    otimizador = tf.train.AdamOptimizer(learning_rate = 0.001)
+    treinamento = otimizador.minimize(erro, global_step = tf.train.get_global_step())
     
+    # Retornando os resultados do treinamento
+    return tf.estimator.EstimatorSpec(mode = mode, loss = erro, train_op = treinamento)
+
+
 # Criando um classificador
 classificador = tf.estimator.Estimator(model_fn = cria_rede)
 
 # Criando uma função para o treinamento
-funcao_treinamento = tf.estimator.inputs.numpy_input_fn(x = {'x': x_treinamento}, y_treinamento,
+funcao_treinamento = tf.estimator.inputs.numpy_input_fn(x = {'x': x_treinamento}, y = y_treinamento,
                                                         batch_size = 128, num_epochs = None, shuffle = True)
 classificador.train(input_fn = funcao_treinamento, steps = 200)
+
