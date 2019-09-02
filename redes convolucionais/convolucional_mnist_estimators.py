@@ -77,18 +77,24 @@ def cria_rede(features, labels, mode):
     saida = tf.layers.dense(inputs = dropout, units = 10)
     previsoes = tf.argmax(saida, axis = 1)
     
+    # Modo de previsão
+    if mode == tf.estimator.ModeKeys.PREDICT:
+        return tf.estimator.EstimatorSpec(mode = mode, predictions = previsoes)
+    
     # Fórmula para o calculo do erro
     erro = tf.losses.sparse_softmax_cross_entropy(labels = labels, logits = saida)
     
+    # Modo de treinamento
     if mode == tf.estimator.ModeKeys.TRAIN:
         otimizador = tf.train.AdamOptimizer(learning_rate = 0.001)
         treinamento = otimizador.minimize(erro, global_step = tf.train.get_global_step())
-    
     # Retornando os resultados do treinamento
         return tf.estimator.EstimatorSpec(mode = mode, loss = erro, train_op = treinamento)
-
+    
+    # Modo de avaliação
     if mode == tf.estimator.ModeKeys.EVAL:
         eval_metrics_ops = {'accuracy': tf.metrics.accuracy(labels = labels, predictions = previsoes)} # accurary indica a taixa e acerto
+         # Retornando os resultados da avaliação
         return tf.estimator.EstimatorSpec(mode = mode, loss = erro, eval_metric_ops = eval_metrics_ops)
         
 # Criando um classificador
@@ -104,3 +110,17 @@ funcao_teste = tf.estimator.inputs.numpy_input_fn(x = {'x': x_teste}, y = y_test
 resultados = classificador.evaluate(input_fn = funcao_teste)
 resultados
 
+# Previsão
+x_imagem_teste = x_teste[0]
+x_imagem_teste.shape
+
+x_imagem_teste = x_imagem_teste.reshape(1, -1)
+x_imagem_teste.shape
+
+funcao_previsao = tf.estimator.inputs.numpy_input_fn(x = {'x': x_imagem_teste}, shuffle = False)
+pred = list(classificador.predict(input_fn = funcao_previsao))
+pred
+
+
+plt.imshow(x_imagem_teste.reshape((28, 28)), cmap = 'gray')
+plt.title('Classe prevista: ' + str(pred[0]))
