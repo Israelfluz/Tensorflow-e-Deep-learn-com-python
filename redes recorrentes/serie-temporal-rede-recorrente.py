@@ -27,12 +27,14 @@ y = base[1:(len(base) - (len(base) % periodos)) + previsao_futura]
 y_batches = y.reshape(-1, periodos, 1)
 
 
-# Base de dados que será utilizada para teste
+# Base de dados que será utilizada para teste e avaliação
 X_teste = base[-(periodos + previsao_futura):]
 X_teste = X_teste[:periodos]
 X_teste = X_teste.reshape(-1, periodos, 1)
-y_teste = base[-(periodos):]
+
+y_teste = base[-(periodos):] # Aqui vamos encontrar as respostas
 y_teste = y_teste.reshape(-1, periodos, 1)
+
 
 import tensorflow as tf
 tf.reset_default_graph()
