@@ -1,21 +1,33 @@
+# Importação da biblioteca pandas para manipulação, leitura e visualização de dados
 import pandas as pd
-base = pd.read_csv('petr4.csv')
-base = base.dropna()
 
-base = base.iloc[:,1].values
+# Carregamento da base de dados para análise
+base = pd.read_csv('petr4.csv')
+base = base.dropna() # Apagando os registros que não foram informados NAN
+
+# A previsão será realizada no atributo Open
+base = base.iloc[:,1].values # O valeus é utilizada para transformar os dados em um numpy
+
+# Visualização do gráfico da série temporal
 import matplotlib.pyplot as plt
 #%matplotlib inline
 plt.plot(base)
 
-periodos = 30
-previsao_futura = 1 # horizonte
 
+# Variável que fará a previsão dos 30 valores futuros utilizando 30 valores passados
+periodos = 30
+previsao_futura = 1 # Está variável indica os horizontes das previsões
+
+# Base de dados que será utilizada para o treinamento
 X = base[0:(len(base) - (len(base) % periodos))]
-X_batches = X.reshape(-1, periodos, 1)
+X_batches = X.reshape(-1, periodos, 1) # Divisão da base de dados para melhor performance da previsão
+
 
 y = base[1:(len(base) - (len(base) % periodos)) + previsao_futura]
 y_batches = y.reshape(-1, periodos, 1)
 
+
+# Base de dados que será utilizada para teste
 X_teste = base[-(periodos + previsao_futura):]
 X_teste = X_teste[:periodos]
 X_teste = X_teste.reshape(-1, periodos, 1)
@@ -81,27 +93,5 @@ plt.plot(y_teste2, label = 'Valor real')
 plt.plot(y_teste2, 'w*', markersize = 10, color = 'red')
 plt.plot(previsoes2, label = 'Previsões')
 plt.legend()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
