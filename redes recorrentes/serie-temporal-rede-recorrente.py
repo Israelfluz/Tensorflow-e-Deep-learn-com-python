@@ -37,19 +37,21 @@ y_teste = y_teste.reshape(-1, periodos, 1)
 
 
 import tensorflow as tf
-tf.reset_default_graph()
+tf.reset_default_graph() # Este comando serve para que nada fique em memória
 
-entradas = 1
+# Criando algumas variáveis
+entradas = 1   # recebe o valor 1 porque temos um atributo previsor (open)
 neuronios_oculta = 100
 neuronios_saida = 1
 
+# Criando os placeholders para receber os dados
 xph = tf.placeholder(tf.float32, [None, periodos, entradas])
 yph = tf.placeholder(tf.float32, [None, periodos, neuronios_saida])
 
 #celula = tf.contrib.rnn.BasicRNNCell(num_units = neuronios_oculta, activation = tf.nn.relu)
-#celula = tf.contrib.rnn.LSTMCell(num_units = neuronios_oculta, activation = tf.nn.relu)
-# camada saída
-#celula = tf.contrib.rnn.OutputProjectionWrapper(celula, output_size = 1)
+celula = tf.contrib.rnn.LSTMCell(num_units = neuronios_oculta, activation = tf.nn.relu)
+# Mapeamento para a camada saída
+celula = tf.contrib.rnn.OutputProjectionWrapper(celula, output_size = 1)
 
 def cria_uma_celula():
     return tf.contrib.rnn.LSTMCell(num_units = neuronios_oculta, activation = tf.nn.relu)
@@ -62,12 +64,15 @@ celula = cria_varias_celulas()
 # camada saída
 celula = tf.contrib.rnn.OutputProjectionWrapper(celula, output_size = 1)
 
-
+# Criando a saída ou as resposta para realizar o calculo do erro
 saida_rnn, _ = tf.nn.dynamic_rnn(celula, xph, dtype = tf.float32)
+
+# Buscando o valor do erro
 erro = tf.losses.mean_squared_error(labels = yph, predictions = saida_rnn)
 otimizador = tf.train.AdamOptimizer(learning_rate = 0.001)
 treinamento = otimizador.minimize(erro)
 
+# Criando uma sessão 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     
@@ -76,6 +81,7 @@ with tf.Session() as sess:
         if epoca % 100 == 0:
             print(epoca + 1, ' erro: ', custo)
     
+    # Previsão feita logo após o treinamento
     previsoes = sess.run(saida_rnn, feed_dict = {xph: X_teste})
     
 import numpy as np
@@ -87,6 +93,7 @@ previsoes2 = np.ravel(previsoes)
 from sklearn.metrics import mean_absolute_error
 mae = mean_absolute_error(y_teste2, previsoes2)
 
+# Visualizando gráficos
 plt.plot(y_teste2, '*', markersize = 10, label = 'Valor real')
 plt.plot(previsoes2, 'o', label = 'Previsões')
 plt.legend()
