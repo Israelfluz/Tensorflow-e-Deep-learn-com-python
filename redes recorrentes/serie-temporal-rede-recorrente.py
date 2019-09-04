@@ -49,13 +49,16 @@ xph = tf.placeholder(tf.float32, [None, periodos, entradas])
 yph = tf.placeholder(tf.float32, [None, periodos, neuronios_saida])
 
 #celula = tf.contrib.rnn.BasicRNNCell(num_units = neuronios_oculta, activation = tf.nn.relu)
-celula = tf.contrib.rnn.LSTMCell(num_units = neuronios_oculta, activation = tf.nn.relu)
+#celula = tf.contrib.rnn.LSTMCell(num_units = neuronios_oculta, activation = tf.nn.relu)
 # Mapeamento para a camada saída
-celula = tf.contrib.rnn.OutputProjectionWrapper(celula, output_size = 1)
+#celula = tf.contrib.rnn.OutputProjectionWrapper(celula, output_size = 1)
 
+## Definindo número de camadas ou celulas.
+# Camada oculta 
 def cria_uma_celula():
     return tf.contrib.rnn.LSTMCell(num_units = neuronios_oculta, activation = tf.nn.relu)
 
+# Camada de saída
 def cria_varias_celulas():
     celulas =  tf.nn.rnn_cell.MultiRNNCell([cria_uma_celula() for i in range(4)])
     return tf.contrib.rnn.DropoutWrapper(celulas, output_keep_prob = 0.1)
