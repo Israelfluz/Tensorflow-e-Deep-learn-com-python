@@ -66,3 +66,65 @@ with tf.Session() as sess:
         custo, _ = sess.run([erro, treinamento], feed_dict = {xph: x})
         if epoca % 100 == 0:
             print('erro: ' + str(custo))
+    x2d_encode = sess.run(camada_oculta, feed_dict = {xph: x})
+    x3d_decode = sess.run(camada_saida, feed_dict = {xph: x})
+    
+    
+x2d_encode.shape
+
+x3d_decode.shape
+
+
+
+x2 = scaler_x.inverse_transform(x)
+x2
+
+
+x3d_decode2 = scaler_x.inverse_transform(x3d_decode)
+x3d_decode2
+
+
+
+from sklearn.metrics import mean_absolute_error
+mae_income = mean_absolute_error(x2[:,0], x3d_decode2[:,0])
+mae_income
+
+
+mae_age = mean_absolute_error(x2[:,1], x3d_decode2[:,1])
+mae_age
+
+
+
+mae_loan = mean_absolute_error(x2[:,2], x3d_decode2[:,2])
+mae_loan
+
+
+x_encode = pd.DataFrame({'atributo1': x2d_encode[:,0], 'atributo2': x2d_encode[:,1], 'classe': y})
+
+
+
+x_encode.head()
+
+
+
+import tensorflow as tf
+colunas = [tf.feature_column.numeric_column(key = column) for column in x_encode.columns]
+from sklearn.model_selection import train_test_split
+x_treinamento, X_teste, y_treinamento, y_teste = train_test_split(x_encode, y, test_size = 0.3, random_state = 0)
+funcao_treinamento = tf.estimator.inputs.pandas_input_fn(x = x_treinamento,
+                                                        y = y_treinamento,
+                                                        batch_size = 8, 
+                                                        num_epochs = None,
+                                                        shuffle = True)
+classificador = tf.estimator.DNNClassifier(feature_columns = colunas, hidden_units = [4, 4])
+classificador.train(input_fn = funcao_treinamento, steps = 1000)
+funcao_teste = tf.estimator.inputs.pandas_input_fn(x = X_teste, y = y_teste,
+                                              batch_size = 8, num_epochs = 1000,
+                                              shuffle = False)
+metricas_teste = classificador.evaluate(input_fn = funcao_teste, steps = 1000)
+
+
+
+metricas_teste
+
+
