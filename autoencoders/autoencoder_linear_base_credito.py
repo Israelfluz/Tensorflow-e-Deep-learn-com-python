@@ -46,4 +46,23 @@ xph = tf.placeholder(tf.float32, shape = [None, neuronios_entrada])
 
 ## Construindo a estrutura da rede neural para o autoencoder 
 
-  
+from tensorflow.contrib.layers import fully_connected
+camada_oculta = fully_connected(inputs = xph, num_outputs = neuronios_oculta, activation_fn = None)
+camada_saida = fully_connected(inputs = neuronios_oculta, num_outputs = neuronios_saida)  
+
+
+# Criando a função para calcular o erro
+erro = tf.losses.mean_squared_error(labels = xph, prediction = camada_saida)
+otimizador = tf.train.AdamOptimizer(0.01)
+
+# Criando variável para o treinamento
+treinamento = otimizador.minimize(erro)
+
+
+# Efetivando o treinamento
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    for epoca in range(1000):
+        custo, _ = sess.run([erro, treinamento], feed_dict = {xph: x})
+        if epoca % 100 == 0:
+            print('erro: ' + str(custo))
