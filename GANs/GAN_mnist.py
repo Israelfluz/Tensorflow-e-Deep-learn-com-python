@@ -49,8 +49,52 @@ def discriminador(x, reuse = None):
         camada_oculta2 = tf.nn.relu(tf.layers.dense(inputs = camada_oculta1, units = 128))
         logits = tf.layers.dense(camada_oculta2, units = 1) # logits significa as previsões do modelo que não estão normalizadas
         return logits 
+
+# Definindo as formulas para o treinamento
+logits_imagens_reais = discriminador(imagens_reais_ph)
+logits_imagens_ruido = discriminador(gerador(ruido_ph), reuse = True)
+
+
+# Calculo do erro do discriminador
+erro_discriminador_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = logits_imagens_reais,
+                                                                                 labels = tf.ones_like(logits_imagens_reias) * (0.9)))
+erro_discriminador_ruido = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = logits_imagens_ruido,
+                                                                                  labels = tf.zeros_like(logits_imagens_ruido)))
+erro_discriminador = erro_discriminador_real + erro_discriminador_ruido
+
+
+# Calculo do erro do gerador
+erro_gerador = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits = logits_imagens_ruido,
+                                                                      labels = tf.ones_like(logits_imagens_ruido))
+
+
+
+# Retornando as variáveis passíveis de otmização
+variaveis = tf.trainable_variables()
+variaveis
+
+
+# Variáveis do discriminador
+variaveis_discriminador = [v for v in variavies if 'discriminador' in v.name]
+print([v.name for v in variaveis_discriminador])
+
+
+# Variáveis do gerador
+variaveis_gerador = [v for v in variavies if 'gerador' in v.name]
+print([v.name for v in variaveis_gerador])
+
+
+
+# Definindo os otimizadores
+treinamento_discriminador = tf.train.AdamOptimizer(learning_rate = 0.001).minimize(erro_discriminador,
+                                                                                  var_list = variaveis_discriminador)
+
+treinamento_gerador = tf.train.AdamOptimizer(learning_rate = 0.001).minimize(erro_gerador,
+                                                                                  var_list = variaveis_gerador)
     
 # Definido o gerador, faremos um primeiro teste 
+batch_size = 100
+amostras_teste = []
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     
@@ -58,13 +102,38 @@ with tf.Session() as sess:
     #amostra = sess.run(gerador(ruido_ph, True), feed_dict = {ruido_ph: ruido_teste})
     
     # Visualizando o resultado construido logo abaixo agora dentro da sessão
-    batch = mnist.train.next_batch(100)
-    imagens_batch = batch[0].reshape((100, 784))
-    imagens_batch = imagens_batch * 2 - 1
-    r = sess.run(discriminador(imagens_reais_ph, True), feed_dict = {imagens_reais_ph: imagens_batch})
+    #batch = mnist.train.next_batch(100)
+    #imagens_batch = batch[0].reshape((100, 784))
+    #imagens_batch = imagens_batch * 2 - 1
+    #r = sess.run(discriminador(imagens_reais_ph, True), feed_dict = {imagens_reais_ph: imagens_batch})
     
     # Para ter os valores de probabilidades
-    r2 = sess.run(tf.nn.sigmoid(r))
+    #r2 = sess.run(tf.nn.sigmoid(r))
+    
+    #ex = tf.constant([[1, 2], [3, 4]])
+    #print(sess.run(tf.ones_like(ex)))
+    
+    for epoca in range(500):
+        numero_batches = mnist.train.num_examples // batch_size
+        for i in range(numero_batches):
+            batch = mnist.train.next_batch(batch_size)
+            imagens_batch = batch[0].reshape((100, 784))
+            imagens_batch = imagens_batch * 2 - 1
+            
+            batch_ruido = np.random.uniform(-1, 1, size = (batch_size,100))
+            
+            _, custod = sess.run([treinamento_discriminador, erro_discriminador],
+                                 feed_dict = {imagens_reais_ph: imagens_batch, ruido_ph: batch_ruido})
+            
+            _, custog = sess.run([treinamento_gerador, erro_gerador], feed_dict = {ruido_ph: batch_ruido})
+            
+            print('epoca: ' + str(epoca + 1) + 'erro D: ' + str(custod) + 'erro G: ' + str(custog))
+
+            ruido_teste = np.random.uniform(-1, 1, size(1, 100))
+            imagem_gerada = sess.run(gerador(ruido_ph, reuse = True), feed_dict = {ruido_ph: ruido_teste})
+            amostras_teste.append(imagem_gerada)
+
+
 # Visualizando o que foi gerado na amostra
 amostra.shape
 
@@ -90,4 +159,5 @@ r
 # Visualizando os valores de propabilidade dentro da variável r2
 r2
 
-
+# Visualizando o gráfico de qual imagem foi gerada
+plt.imshow(amostras_teste[0].reshape(28, 28))
